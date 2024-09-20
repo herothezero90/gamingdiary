@@ -13,7 +13,12 @@ const GameList = ({ games }) => {
   };
 
   return (
-    <VStack spacing={4}>
+    <VStack
+      w="100vw"
+      display="flex"
+      alignItems="center"
+      justifyContent="center"
+      spacing={4}>
       {games.length > 0 && (
         <Select placeholder="Select a game" onChange={handleSelect}>
           {games.map((game) => (

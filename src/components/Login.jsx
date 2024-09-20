@@ -13,7 +13,7 @@ const Login = ({ setUsername }) => {
 
   return (
     <Box
-      w="100%"
+      w="100vw"
       h="100vh"
       display="flex"
       alignItems="center"

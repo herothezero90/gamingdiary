@@ -51,7 +51,7 @@ const MainPage = ({ username }) => {
           placeholder="Search for a game"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          onKeyPress={handleSearch}
+          onKeyDown={handleSearch}
           width="100%"
           maxWidth="500px"
         />
