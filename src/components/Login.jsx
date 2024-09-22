@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Box, Input, Button, Heading, VStack } from '@chakra-ui/react';
+import bgImg from '/public/Designer.jpeg'
 
 const Login = ({ setUsername }) => {
   const [user, setUser] = useState('');
@@ -18,6 +19,7 @@ const Login = ({ setUsername }) => {
       display="flex"
       alignItems="center"
       justifyContent="center"
+      backgroundImage={bgImg}
     >
       <VStack spacing={4}>
         <Heading>Login</Heading>
