@@ -14,10 +14,10 @@ import {
 
 const TopTen = () => {
   const [games, setGames] = useState([]);
-  const [loading, setLoading] = useState(false); // Initially not loading
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState(false);
 
-  const [criterion, setCriterion] = useState(null); // Start with no criterion selected
+  const [criterion, setCriterion] = useState(null);
 
   const fetchTopTenGames = async (selectedCriterion) => {
     setLoading(true);
@@ -25,18 +25,15 @@ const TopTen = () => {
     try {
       let collectedGames = [];
       let page = 1;
-      const pageSize = 20; // Fetch more games per page to reduce API calls
+      const pageSize = 20;
 
       while (collectedGames.length < 10) {
         let url = `/.netlify/functions/fetchGames?page_size=${pageSize}&page=${page}`;
 
-        // Adjust the API call based on the selected criterion
         if (selectedCriterion === 'date') {
-          // Fetch games released in the last year
           const currentYear = new Date().getFullYear();
           url += `&dates=${currentYear - 1}-01-01,${currentYear}-12-31&ordering=-released`;
         } else if (selectedCriterion === 'score') {
-          // Fetch top-rated games
           url += '&ordering=-metacritic';
         }
 
@@ -48,23 +45,19 @@ const TopTen = () => {
 
         const data = await response.json();
 
-        // Filter out games without a cover image
         const gamesWithImages = data.results.filter(
           (game) => game.background_image
         );
 
-        // Add filtered games to the collectedGames array
         collectedGames = [...collectedGames, ...gamesWithImages];
 
-        // Check if there are no more games to fetch
         if (!data.next) {
-          break; // Exit the loop if there are no more pages
+          break;
         }
 
-        page += 1; // Move to the next page
+        page += 1;
       }
 
-      // Limit the collectedGames to the top 10
       setGames(collectedGames.slice(0, 10));
     } catch (error) {
       console.error('Fetch error:', error);
@@ -76,22 +69,20 @@ const TopTen = () => {
 
   const handleCriterionChange = (newCriterion) => {
     setCriterion(newCriterion);
-    setGames([]); // Clear previous games
+    setGames([]);
     fetchTopTenGames(newCriterion);
   };
 
   const handleHideTopTen = () => {
-    setCriterion(null); // Hide Top 10 section by resetting the criterion
-    setGames([]); // Clear the displayed games
+    setCriterion(null);
+    setGames([]);
   };
 
   return (
     <Box w="100%" mt={8}>
-      {/* Centered Title */}
       <Heading as="h2" size="lg" textAlign="center" mb={4}>
         What to play next?
       </Heading>
-      {/* Buttons to select criterion */}
       <HStack spacing={4} mb={4} justifyContent="center">
         <Button
           onClick={() => handleCriterionChange('date')}
@@ -111,7 +102,6 @@ const TopTen = () => {
           </Button>
         )}
       </HStack>
-      {/* Display games only if a criterion is selected */}
       {criterion && (
         <>
           {loading ? (
@@ -149,7 +139,6 @@ const TopTen = () => {
                     <Text fontSize="md" fontWeight="bold" textAlign="center">
                       {game.name}
                     </Text>
-                    {/* Conditionally render the score based on the criterion */}
                     {criterion === 'score' && (
                       <Text fontSize="sm" color="gray.500" textAlign="center">
                         Score: {game.metacritic || 'N/A'}
