@@ -6,10 +6,12 @@ import {
   VStack,
   Spinner,
   Text,
+  HStack,
+  Button
 } from '@chakra-ui/react';
 import GameList from './GameList';
 
-const MainPage = ({ username }) => {
+const MainPage = ({ username, setUsername }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [games, setGames] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -41,11 +43,16 @@ const MainPage = ({ username }) => {
     }
   };
 
+  const handleLogout = () => {
+    setUsername('');
+  };
+
   return (
     <Box p={4}>
-      <Heading mb={4} textAlign="center">
-        Welcome, {username}!
-      </Heading>
+      <HStack justifyContent="space-between" mb={4}>
+        <Heading>Welcome, {username}!</Heading>
+        <Button onClick={handleLogout}>Logout</Button>
+      </HStack>
       <VStack spacing={4}>
         <Input
           placeholder="Search for a game"
