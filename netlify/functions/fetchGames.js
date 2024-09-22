@@ -13,16 +13,13 @@ exports.handler = async (event, context) => {
       };
     }
 
-    // Extract all query parameters from the event
     const queryParameters = event.queryStringParameters || {};
     const queryParams = [];
 
-    // Build query parameters
     for (const [key, value] of Object.entries(queryParameters)) {
       queryParams.push(`${key}=${encodeURIComponent(value)}`);
     }
 
-    // Construct the API URL
     const apiUrl = `https://api.rawg.io/api/games?key=${apiKey}&${queryParams.join(
       "&"
     )}`;

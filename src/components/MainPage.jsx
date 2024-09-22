@@ -49,10 +49,24 @@ const MainPage = ({ username, setUsername }) => {
   };
 
   return (
-    <Box p={4}>
-      <HStack justifyContent="space-between" mb={4}>
-        <Heading>Welcome, {username}!</Heading>
-        <Button onClick={handleLogout}>Logout</Button>
+    <Box
+      p={4}
+      maxW="100vw"
+      overflowX="hidden"
+    >
+      <HStack
+        justifyContent="space-between"
+        mb={4}
+        w="100%"
+        maxW="container.lg"
+        flexWrap="wrap"
+      >
+        <Heading size="lg" isTruncated>
+          Welcome, {username}!
+        </Heading>
+        <Button onClick={handleLogout} mt={[2, 0]}>
+          Logout
+        </Button>
       </HStack>
       <VStack spacing={4}>
         <Input
@@ -61,7 +75,8 @@ const MainPage = ({ username, setUsername }) => {
           onChange={(e) => setSearchQuery(e.target.value)}
           onKeyDown={handleSearch}
           width="100%"
-          maxWidth="500px"
+          maxW="500px"
+          mx="auto"
         />
         {loading && <Spinner />}
         {error && <Text color="red.500">{error}</Text>}
