@@ -3,7 +3,6 @@ require("dotenv").config();
 
 exports.handler = async (event, context) => {
   try {
-    const query = event.queryStringParameters.query;
     const apiKey = process.env.RAWG_API_KEY;
 
     if (!apiKey) {
@@ -14,17 +13,21 @@ exports.handler = async (event, context) => {
       };
     }
 
-    if (!query) {
-      console.error("Query parameter is missing");
-      return {
-        statusCode: 400,
-        body: JSON.stringify({ error: "Query parameter is required" }),
-      };
+    // Extract all query parameters from the event
+    const queryParameters = event.queryStringParameters || {};
+    const queryParams = [];
+
+    // Build query parameters
+    for (const [key, value] of Object.entries(queryParameters)) {
+      queryParams.push(`${key}=${encodeURIComponent(value)}`);
     }
 
-    const apiUrl = `https://api.rawg.io/api/games?key=${apiKey}&search=${encodeURIComponent(
-      query
+    // Construct the API URL
+    const apiUrl = `https://api.rawg.io/api/games?key=${apiKey}&${queryParams.join(
+      "&"
     )}`;
+
+    console.log("Fetching data from RAWG API:", apiUrl);
 
     const response = await fetch(apiUrl);
 

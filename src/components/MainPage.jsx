@@ -10,6 +10,7 @@ import {
   Button
 } from '@chakra-ui/react';
 import GameList from './GameList';
+import TopTen from './TopTen';
 
 const MainPage = ({ username, setUsername }) => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -65,6 +66,7 @@ const MainPage = ({ username, setUsername }) => {
         {loading && <Spinner />}
         {error && <Text color="red.500">{error}</Text>}
         <GameList games={games} />
+        <TopTen />
       </VStack>
     </Box>
   );
