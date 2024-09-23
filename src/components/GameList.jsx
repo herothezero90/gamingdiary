@@ -1,34 +1,32 @@
-import React, { useState } from 'react';
-import { VStack, Select } from '@chakra-ui/react';
+import React from 'react';
+import { VStack } from '@chakra-ui/react';
 import GameCard from './GameCard';
 
-const GameList = ({ games }) => {
-  const [selectedGame, setSelectedGame] = useState(null);
-
-  const handleSelect = (e) => {
-    const game = games.find(
-      (game) => game.id === parseInt(e.target.value)
-    );
-    setSelectedGame(game);
-  };
-
+const GameList = ({
+  games,
+  addToWishlist,
+  addToPlayingNow,
+  addToPlayedGames,
+}) => {
   return (
     <VStack
       w="100vw"
       display="flex"
       alignItems="center"
       justifyContent="center"
-      spacing={4}>
-      {games.length > 0 && (
-        <Select placeholder="Select a game" onChange={handleSelect}>
-          {games.map((game) => (
-            <option key={game.id} value={game.id}>
-              {game.name}
-            </option>
-          ))}
-        </Select>
-      )}
-      {selectedGame && <GameCard game={selectedGame} />}
+      spacing={4}
+    >
+      {games.length > 0 &&
+        games.map((game) => (
+          <GameCard
+            key={game.id}
+            game={game}
+            addToWishlist={addToWishlist}
+            addToPlayingNow={addToPlayingNow}
+            addToPlayedGames={addToPlayedGames}
+            hideButtons={false}
+          />
+        ))}
     </VStack>
   );
 };

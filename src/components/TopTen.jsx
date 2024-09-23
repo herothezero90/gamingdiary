@@ -1,13 +1,24 @@
 import React, { useState, useEffect } from 'react';
-import { Box, SimpleGrid, Image, Button, Spinner, Text, VStack, HStack } from '@chakra-ui/react';
+import {
+  Box,
+  SimpleGrid,
+  Image,
+  Text,
+  Button,
+  VStack,
+  HStack,
+  Center,
+  Spinner
+} from '@chakra-ui/react';
 
-const TopTen = () => {
+const TopTen = ({ addToWishlist, addToPlayingNow, addToPlayedGames }) => {
   const [games, setGames] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  const [showTopRated, setShowTopRated] = useState(false);
-  const [page, setPage] = useState(1);
+  const [showTopRated, setShowTopRated] = useState(false); // Controls visibility of the section
+  const [page, setPage] = useState(1); // For pagination
+
   const fetchTopGames = async (pageNumber) => {
     setLoading(true);
     setError(null);
@@ -22,15 +33,11 @@ const TopTen = () => {
       }
 
       const data = await response.json();
+
+      // Filter games with cover images
       const gamesWithImages = data.results.filter((game) => game.background_image);
 
-      if (gamesWithImages.length < 10 && data.next) {
-        const nextPageNumber = pageNumber + 1;
-        const nextPageGames = await fetchNextPage(nextPageNumber, gamesWithImages.length);
-        setGames(nextPageGames);
-      } else {
-        setGames(gamesWithImages);
-      }
+      setGames(gamesWithImages);
     } catch (error) {
       console.error('Fetch error:', error);
       setError('An error occurred while fetching the top games.');
@@ -39,37 +46,9 @@ const TopTen = () => {
     }
   };
 
-  const fetchNextPage = async (pageNumber, currentGameCount) => {
-    try {
-      const response = await fetch(
-        `/.netlify/functions/fetchGames?page_size=10&ordering=-metacritic&page=${pageNumber}`
-      );
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const data = await response.json();
-
-      const gamesWithImages = data.results.filter((game) => game.background_image);
-
-      const combinedGames = [...games, ...gamesWithImages];
-
-      if (combinedGames.length >= 10 || !data.next) {
-        return combinedGames.slice(0, 10);
-      } else {
-        return await fetchNextPage(pageNumber + 1, combinedGames.length);
-      }
-    } catch (error) {
-      console.error('Fetch error:', error);
-      setError('An error occurred while fetching the top games.');
-      return games;
-    }
-  };
-
   const handleShowTopRated = () => {
     setShowTopRated(true);
-    setPage(1);
+    setPage(1); // Reset to first page
     fetchTopGames(1);
   };
 
@@ -95,28 +74,24 @@ const TopTen = () => {
 
   return (
     <Box p={4}>
-      {!showTopRated && (
-        <Button onClick={handleShowTopRated} colorScheme="blue">
-          Show Top Rated Games
-        </Button>
-      )}
+      {/* Centering Show/Hide Button */}
+      <Center>
+        {!showTopRated && (
+          <Button onClick={handleShowTopRated} colorScheme="blue">
+            Show Top Rated Games
+          </Button>
+        )}
 
+        {showTopRated && (
+          <Button onClick={handleHideTopRated} colorScheme="blue">
+            Hide Top Rated Games
+          </Button>
+        )}
+      </Center>
+
+      {/* Games Grid */}
       {showTopRated && (
-        <Box>
-          <HStack justifyContent="space-between" mt={4} mb={4} flexWrap="wrap">
-            <Button onClick={handleHideTopRated} colorScheme="blue" mb={[2, 0]}>
-              Hide Top Rated Games
-            </Button>
-            <HStack>
-              <Button onClick={handlePreviousPage} isDisabled={page === 1} colorScheme="blue">
-                Previous
-              </Button>
-              <Button onClick={handleNextPage} colorScheme="blue">
-                Next
-              </Button>
-            </HStack>
-          </HStack>
-
+        <Box mt={4}>
           {loading && (
             <VStack mt={4}>
               <Spinner />
@@ -130,7 +105,7 @@ const TopTen = () => {
           )}
 
           {!loading && !error && (
-            <SimpleGrid columns={{ base: 2, lg: 5 }} spacing={4}>
+            <SimpleGrid columns={{ base: 2, md: 3, lg: 5 }} spacing={4}>
               {games.map((game) => (
                 <Box key={game.id} textAlign="center">
                   <Image
@@ -144,10 +119,47 @@ const TopTen = () => {
                   />
                   <Text fontWeight="bold">{game.name}</Text>
                   <Text>Metascore: {game.metacritic}</Text>
+
+                  {/* Action Buttons */}
+                  <HStack spacing={2} mt={2} justifyContent="center">
+                    <Button
+                      size="sm"
+                      colorScheme="teal"
+                      onClick={() => addToWishlist(game)}
+                    >
+                      To Buy
+                    </Button>
+                    <Button
+                      size="sm"
+                      colorScheme="green"
+                      onClick={() => addToPlayedGames(game)}
+                    >
+                      Played
+                    </Button>
+                    <Button
+                      size="sm"
+                      colorScheme="orange"
+                      onClick={() => addToPlayingNow(game)}
+                    >
+                      Playing
+                    </Button>
+                  </HStack>
                 </Box>
               ))}
             </SimpleGrid>
           )}
+
+          {/* Centering Next/Previous Buttons */}
+          <Center mt={4}>
+            <HStack>
+              <Button onClick={handlePreviousPage} isDisabled={page === 1} colorScheme="blue">
+                Previous
+              </Button>
+              <Button onClick={handleNextPage} colorScheme="blue">
+                Next
+              </Button>
+            </HStack>
+          </Center>
         </Box>
       )}
     </Box>

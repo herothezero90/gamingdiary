@@ -16,6 +16,9 @@ import {
 import debounce from 'lodash.debounce';
 import GameList from './GameList';
 import TopTen from './TopTen';
+import Wishlist from './Wishlist';
+import PlayingNow from './PlayingNow';
+import PlayedGames from './PlayedGames';
 
 const MainPage = ({ username, setUsername }) => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -28,6 +31,67 @@ const MainPage = ({ username, setUsername }) => {
   const [highlightedIndex, setHighlightedIndex] = useState(-1);
 
   const wrapperRef = useRef(null);
+
+  const [wishlist, setWishlist] = useState([]);
+  const [playingNow, setPlayingNow] = useState([]);
+  const [playedGames, setPlayedGames] = useState([]);
+
+  const addToWishlist = (game) => {
+    setWishlist((prevWishlist) => {
+      // Avoid duplicates
+      if (!prevWishlist.find((g) => g.id === game.id)) {
+        return [...prevWishlist, game];
+      }
+      return prevWishlist;
+    });
+  };
+
+  const removeFromWishlist = (gameId) => {
+    setWishlist((prevWishlist) => prevWishlist.filter((game) => game.id !== gameId));
+  };
+
+  // Functions for Playing Now
+  const addToPlayingNow = (game) => {
+    setPlayingNow((prevPlayingNow) => {
+      if (!prevPlayingNow.find((g) => g.id === game.id)) {
+        return [...prevPlayingNow, game];
+      }
+      return prevPlayingNow;
+    });
+    // Remove from other lists if present
+    removeFromWishlist(game.id);
+    removeFromPlayedGames(game.id);
+  };
+
+  const removeFromPlayingNow = (gameId) => {
+    setPlayingNow((prevPlayingNow) => prevPlayingNow.filter((game) => game.id !== gameId));
+  };
+
+  // Functions for Played Games
+  const addToPlayedGames = (game) => {
+    setPlayedGames((prevPlayedGames) => {
+      if (!prevPlayedGames.find((g) => g.id === game.id)) {
+        return [...prevPlayedGames, { ...game, rating: 0 }]; // Initialize rating to 0
+      }
+      return prevPlayedGames;
+    });
+    // Remove from other lists if present
+    removeFromWishlist(game.id);
+    removeFromPlayingNow(game.id);
+  };
+
+  const removeFromPlayedGames = (gameId) => {
+    setPlayedGames((prevPlayedGames) => prevPlayedGames.filter((game) => game.id !== gameId));
+  };
+
+  const updateGameRating = (gameId, rating) => {
+    setPlayedGames((prevPlayedGames) =>
+      prevPlayedGames.map((game) =>
+        game.id === gameId ? { ...game, rating } : game
+      )
+    );
+  };
+
 
   useEffect(() => {
     function handleClickOutside(event) {
@@ -80,12 +144,10 @@ const MainPage = ({ username, setUsername }) => {
 
   const debouncedFetchSuggestions = debounce(fetchSuggestions, 500);
 
-  const handleSuggestionClick = (gameId) => {
-    console.log('Selected game ID:', gameId);
+  const handleSuggestionClick = (game) => {
     setSearchQuery('');
     setSuggestions([]);
-    setShowSuggestions(false);
-    fetchGameById(gameId);
+    setGames([game]); // Set the selected game as the only item in the games array
   };
 
   const fetchGameById = async (gameId) => {
@@ -216,7 +278,7 @@ const MainPage = ({ username, setUsername }) => {
                     cursor="pointer"
                     backgroundColor={highlightedIndex === index ? 'gray.200' : 'white'}
                     _hover={{ backgroundColor: 'gray.100' }}
-                    onClick={() => handleSuggestionClick(suggestion.id)}
+                    onClick={() => handleSuggestionClick(suggestion)}
                   >
                     {suggestion.name}
                   </ListItem>
@@ -227,8 +289,32 @@ const MainPage = ({ username, setUsername }) => {
         </Box>
         {loading && <Spinner />}
         {error && <Text color="red.500">{error}</Text>}
-        <GameList games={games} />
-        <TopTen />
+        <GameList
+          games={games}
+          addToWishlist={addToWishlist}
+          addToPlayingNow={addToPlayingNow}
+          addToPlayedGames={addToPlayedGames}
+        />
+        {/* Top Ten Section */}
+        <TopTen
+          addToWishlist={addToWishlist}
+          addToPlayingNow={addToPlayingNow}
+          addToPlayedGames={addToPlayedGames}
+        />
+        {/* Playing Now List */}
+        <PlayingNow
+          playingNow={playingNow}
+          removeFromPlayingNow={removeFromPlayingNow}
+          addToPlayedGames={addToPlayedGames}
+        />
+        {/* Wishlist */}
+        <Wishlist wishlist={wishlist} removeFromWishlist={removeFromWishlist} />
+        {/* Played Games List */}
+        <PlayedGames
+          playedGames={playedGames}
+          removeFromPlayedGames={removeFromPlayedGames}
+          updateGameRating={updateGameRating}
+        />
       </VStack>
     </Box>
   );
