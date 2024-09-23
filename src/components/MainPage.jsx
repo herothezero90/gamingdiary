@@ -166,6 +166,7 @@ const MainPage = ({ username, setUsername }) => {
       p={4}
       maxW="100vw"
       overflowX="hidden"
+      bg="#5C3168" color="white" minH="100vh"
     >
       <VStack spacing={4} align="stretch">
         <HStack justifyContent="space-between" flexWrap="wrap" w="100%">

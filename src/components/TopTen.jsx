@@ -86,18 +86,20 @@ const TopTen = () => {
       <HStack spacing={4} mb={4} justifyContent="center">
         <Button
           onClick={() => handleCriterionChange('date')}
-          variant={criterion === 'date' ? 'solid' : 'outline'}
+          variant={criterion === 'date' ? 'outline' : 'solid'}
+          colorScheme='yellow'
         >
           TOP 10 by Date
         </Button>
         <Button
           onClick={() => handleCriterionChange('score')}
-          variant={criterion === 'score' ? 'solid' : 'outline'}
+          variant={criterion === 'score' ? 'outline' : 'solid'}
+          colorScheme='yellow'
         >
           TOP 10 by Score
         </Button>
         {criterion && (
-          <Button colorScheme="blue" onClick={handleHideTopTen}>
+          <Button colorScheme="teal" onClick={handleHideTopTen}>
             Hide Top 10
           </Button>
         )}
