@@ -1,168 +1,154 @@
 import React, { useState, useEffect } from 'react';
-import {
-  Box,
-  Image,
-  VStack,
-  Button,
-  HStack,
-  SimpleGrid,
-  Text,
-  Heading,
-  Spinner,
-  Center
-} from '@chakra-ui/react';
+import { Box, SimpleGrid, Image, Button, Spinner, Text, VStack, HStack } from '@chakra-ui/react';
 
 const TopTen = () => {
   const [games, setGames] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(false);
+  const [error, setError] = useState(null);
 
-  const [criterion, setCriterion] = useState(null);
-
-  const fetchTopTenGames = async (selectedCriterion) => {
+  const [showTopRated, setShowTopRated] = useState(false);
+  const [page, setPage] = useState(1);
+  const fetchTopGames = async (pageNumber) => {
     setLoading(true);
-    setError(false);
+    setError(null);
+
     try {
-      let collectedGames = [];
-      let page = 1;
-      const pageSize = 20;
+      const response = await fetch(
+        `/.netlify/functions/fetchGames?page_size=10&ordering=-metacritic&page=${pageNumber}`
+      );
 
-      while (collectedGames.length < 10) {
-        let url = `/.netlify/functions/fetchGames?page_size=${pageSize}&page=${page}`;
-
-        if (selectedCriterion === 'date') {
-          const currentYear = new Date().getFullYear();
-          url += `&dates=${currentYear - 1}-01-01,${currentYear}-12-31&ordering=-released`;
-        } else if (selectedCriterion === 'score') {
-          url += '&ordering=-metacritic';
-        }
-
-        const response = await fetch(url);
-
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-
-        const data = await response.json();
-
-        const gamesWithImages = data.results.filter(
-          (game) => game.background_image
-        );
-
-        collectedGames = [...collectedGames, ...gamesWithImages];
-
-        if (!data.next) {
-          break;
-        }
-
-        page += 1;
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
 
-      setGames(collectedGames.slice(0, 10));
+      const data = await response.json();
+      const gamesWithImages = data.results.filter((game) => game.background_image);
+
+      if (gamesWithImages.length < 10 && data.next) {
+        const nextPageNumber = pageNumber + 1;
+        const nextPageGames = await fetchNextPage(nextPageNumber, gamesWithImages.length);
+        setGames(nextPageGames);
+      } else {
+        setGames(gamesWithImages);
+      }
     } catch (error) {
       console.error('Fetch error:', error);
-      setError(true);
+      setError('An error occurred while fetching the top games.');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleCriterionChange = (newCriterion) => {
-    setCriterion(newCriterion);
-    setGames([]);
-    fetchTopTenGames(newCriterion);
+  const fetchNextPage = async (pageNumber, currentGameCount) => {
+    try {
+      const response = await fetch(
+        `/.netlify/functions/fetchGames?page_size=10&ordering=-metacritic&page=${pageNumber}`
+      );
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+
+      const gamesWithImages = data.results.filter((game) => game.background_image);
+
+      const combinedGames = [...games, ...gamesWithImages];
+
+      if (combinedGames.length >= 10 || !data.next) {
+        return combinedGames.slice(0, 10);
+      } else {
+        return await fetchNextPage(pageNumber + 1, combinedGames.length);
+      }
+    } catch (error) {
+      console.error('Fetch error:', error);
+      setError('An error occurred while fetching the top games.');
+      return games;
+    }
   };
 
-  const handleHideTopTen = () => {
-    setCriterion(null);
+  const handleShowTopRated = () => {
+    setShowTopRated(true);
+    setPage(1);
+    fetchTopGames(1);
+  };
+
+  const handleHideTopRated = () => {
+    setShowTopRated(false);
     setGames([]);
+    setPage(1);
+  };
+
+  const handleNextPage = () => {
+    const nextPage = page + 1;
+    setPage(nextPage);
+    fetchTopGames(nextPage);
+  };
+
+  const handlePreviousPage = () => {
+    if (page > 1) {
+      const prevPage = page - 1;
+      setPage(prevPage);
+      fetchTopGames(prevPage);
+    }
   };
 
   return (
-    <Box w="100%" mt={8}>
-      <Heading as="h2" size="lg" textAlign="center" mb={4}>
-        What to play next?
-      </Heading>
-      <HStack spacing={4} mb={4} justifyContent="center">
-        <Button
-          onClick={() => handleCriterionChange('date')}
-          variant={criterion === 'date' ? 'outline' : 'solid'}
-          colorScheme='yellow'
-        >
-          TOP 10 by Date
+    <Box p={4}>
+      {!showTopRated && (
+        <Button onClick={handleShowTopRated} colorScheme="blue">
+          Show Top Rated Games
         </Button>
-        <Button
-          onClick={() => handleCriterionChange('score')}
-          variant={criterion === 'score' ? 'outline' : 'solid'}
-          colorScheme='yellow'
-        >
-          TOP 10 by Score
-        </Button>
-        {criterion && (
-          <Button colorScheme="teal" onClick={handleHideTopTen}>
-            Hide Top 10
-          </Button>
-        )}
-      </HStack>
-      {criterion && (
-        <>
-          {loading ? (
-            <Box textAlign="center" mt={4}>
-              <Spinner thickness='4px'
-                speed='0.65s'
-                emptyColor='gray.200'
-                color='blue.500'
-                size='lg'
-                mt='20'
-              />
-              <Text>Loading top 10 games...</Text>
-            </Box>
-          ) : error ? (
-            <Box textAlign="center" mt={4}>
-              <Text color="red.500">Error loading top 10 games. Please try again later.</Text>
-            </Box>
-          ) : (
-            <SimpleGrid
-              columns={{ base: 1, md: 2, lg: 5 }}
-              rows={{ base: 1, lg: 5 }}
-              spacing={4}
-            >
+      )}
+
+      {showTopRated && (
+        <Box>
+          <HStack justifyContent="space-between" mt={4} mb={4} flexWrap="wrap">
+            <Button onClick={handleHideTopRated} colorScheme="blue" mb={[2, 0]}>
+              Hide Top Rated Games
+            </Button>
+            <HStack>
+              <Button onClick={handlePreviousPage} isDisabled={page === 1} colorScheme="blue">
+                Previous
+              </Button>
+              <Button onClick={handleNextPage} colorScheme="blue">
+                Next
+              </Button>
+            </HStack>
+          </HStack>
+
+          {loading && (
+            <VStack mt={4}>
+              <Spinner />
+            </VStack>
+          )}
+
+          {error && (
+            <Text color="red.500" mt={4}>
+              {error}
+            </Text>
+          )}
+
+          {!loading && !error && (
+            <SimpleGrid columns={{ base: 2, lg: 5 }} spacing={4}>
               {games.map((game) => (
-                <Box key={game.id}>
-                  <VStack spacing={2}>
-                    <Image
-                      src={game.background_image}
-                      alt={game.name}
-                      objectFit="cover"
-                      w="100%"
-                      h="150px"
-                      borderRadius="md"
-                    />
-                    <Text fontSize="md" fontWeight="bold" textAlign="center">
-                      {game.name}
-                    </Text>
-                    {criterion === 'score' && (
-                      <Text fontSize="sm" color="gray.500" textAlign="center">
-                        Score: {game.metacritic || 'N/A'}
-                      </Text>
-                    )}
-                  </VStack>
+                <Box key={game.id} textAlign="center">
+                  <Image
+                    src={game.background_image}
+                    alt={game.name}
+                    objectFit="cover"
+                    w="100%"
+                    h="200px"
+                    mb={2}
+                    borderRadius="md"
+                  />
+                  <Text fontWeight="bold">{game.name}</Text>
+                  <Text>Metascore: {game.metacritic}</Text>
                 </Box>
               ))}
             </SimpleGrid>
           )}
-          {criterion && (
-            <Center mt={4}>
-              <Button
-                colorScheme="blue"
-                onClick={handleHideTopTen}
-                display={{ base: 'flex', lg: 'none' }}
-              >
-                Hide Top 10
-              </Button>
-            </Center>
-          )}
-        </>
+        </Box>
       )}
     </Box>
   );
