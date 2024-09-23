@@ -16,6 +16,7 @@ const GameCard = ({ game }) => {
       p={4}
       w="100%"
       maxW="lg"
+      backgroundColor="black"
     >
       <VStack spacing={4} align="center">
         <Image

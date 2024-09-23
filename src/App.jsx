@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { ChakraProvider } from '@chakra-ui/react';
 import Login from './components/Login';
 import MainPage from './components/MainPage';
+import './App.css'
 
 function App() {
   const [username, setUsername] = useState('');

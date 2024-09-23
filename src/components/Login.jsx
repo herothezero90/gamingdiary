@@ -1,16 +1,22 @@
-import React, { useState } from 'react';
-import { Box, Input, Button, Heading, VStack } from '@chakra-ui/react';
-import bgImg from '/public/Designer.jpeg'
+import React, { useState, useEffect } from 'react';
+import { Box, Input, Button, Heading, VStack, useDisclosure } from '@chakra-ui/react';
+import bgImg from '/public/Designer2.png'
+import InfoModal from './InfoModal';
 
 const Login = ({ setUsername }) => {
   const [user, setUser] = useState('');
   const [password, setPassword] = useState('');
+  const { isOpen, onOpen, onClose } = useDisclosure();
 
   const handleLogin = () => {
     if (user) {
       setUsername(user);
     }
   };
+
+  useEffect(() => {
+    onOpen();
+  }, [onOpen]);
 
   return (
     <Box
@@ -19,8 +25,13 @@ const Login = ({ setUsername }) => {
       display="flex"
       alignItems="center"
       justifyContent="center"
-      backgroundImage={bgImg}
+      backgroundImage={`url(${bgImg})`}
+      backgroundSize="contain"
+      backgroundPosition="center"
+      backgroundRepeat="no-repeat"
+      backgroundColor="black"
     >
+      <InfoModal isOpen={isOpen} onClose={onClose} />
       <VStack spacing={4}>
         <Heading>Login</Heading>
         <Input
