@@ -5,4 +5,4 @@ start with npm run dev
 Phases:
 1. Wishlist
 2. Played games with user ratings
-3. Backlog - games to play in the future and customizing order
+3. Backlog - games to play in the future and customizing order 
