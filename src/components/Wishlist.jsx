@@ -1,6 +1,6 @@
-import React from 'react';
 import { Box, VStack, Heading } from '@chakra-ui/react';
 import GameCard from './GameCard';
+import PropTypes from 'prop-types';
 
 const Wishlist = ({ wishlist, removeFromWishlist }) => {
   return (
@@ -26,6 +26,18 @@ const Wishlist = ({ wishlist, removeFromWishlist }) => {
       )}
     </Box>
   );
+};
+
+Wishlist.propTypes = {
+  wishlist: PropTypes.arrayOf(
+    PropTypes.shape({
+      id: PropTypes.number.isRequired,
+      name: PropTypes.string.isRequired,
+      background_image: PropTypes.string,
+      metacritic: PropTypes.number,
+    })
+  ).isRequired,
+  removeFromWishlist: PropTypes.func.isRequired,
 };
 
 export default Wishlist;

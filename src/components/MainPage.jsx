@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import {
   Box,
   Input,
@@ -17,8 +17,8 @@ import debounce from 'lodash.debounce';
 import GameList from './GameList';
 import TopTen from './TopTen';
 import Wishlist from './Wishlist';
-import PlayingNow from './PlayingNow';
-import PlayedGames from './PlayedGames';
+import PropTypes from 'prop-types';
+
 
 const MainPage = ({ username, setUsername }) => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -33,12 +33,9 @@ const MainPage = ({ username, setUsername }) => {
   const wrapperRef = useRef(null);
 
   const [wishlist, setWishlist] = useState([]);
-  const [playingNow, setPlayingNow] = useState([]);
-  const [playedGames, setPlayedGames] = useState([]);
 
   const addToWishlist = (game) => {
     setWishlist((prevWishlist) => {
-      // Avoid duplicates
       if (!prevWishlist.find((g) => g.id === game.id)) {
         return [...prevWishlist, game];
       }
@@ -49,49 +46,6 @@ const MainPage = ({ username, setUsername }) => {
   const removeFromWishlist = (gameId) => {
     setWishlist((prevWishlist) => prevWishlist.filter((game) => game.id !== gameId));
   };
-
-  // Functions for Playing Now
-  const addToPlayingNow = (game) => {
-    setPlayingNow((prevPlayingNow) => {
-      if (!prevPlayingNow.find((g) => g.id === game.id)) {
-        return [...prevPlayingNow, game];
-      }
-      return prevPlayingNow;
-    });
-    // Remove from other lists if present
-    removeFromWishlist(game.id);
-    removeFromPlayedGames(game.id);
-  };
-
-  const removeFromPlayingNow = (gameId) => {
-    setPlayingNow((prevPlayingNow) => prevPlayingNow.filter((game) => game.id !== gameId));
-  };
-
-  // Functions for Played Games
-  const addToPlayedGames = (game) => {
-    setPlayedGames((prevPlayedGames) => {
-      if (!prevPlayedGames.find((g) => g.id === game.id)) {
-        return [...prevPlayedGames, { ...game, rating: 0 }]; // Initialize rating to 0
-      }
-      return prevPlayedGames;
-    });
-    // Remove from other lists if present
-    removeFromWishlist(game.id);
-    removeFromPlayingNow(game.id);
-  };
-
-  const removeFromPlayedGames = (gameId) => {
-    setPlayedGames((prevPlayedGames) => prevPlayedGames.filter((game) => game.id !== gameId));
-  };
-
-  const updateGameRating = (gameId, rating) => {
-    setPlayedGames((prevPlayedGames) =>
-      prevPlayedGames.map((game) =>
-        game.id === gameId ? { ...game, rating } : game
-      )
-    );
-  };
-
 
   useEffect(() => {
     function handleClickOutside(event) {
@@ -147,7 +101,7 @@ const MainPage = ({ username, setUsername }) => {
   const handleSuggestionClick = (game) => {
     setSearchQuery('');
     setSuggestions([]);
-    setGames([game]); // Set the selected game as the only item in the games array
+    setGames([game]);
   };
 
   const fetchGameById = async (gameId) => {
@@ -228,7 +182,9 @@ const MainPage = ({ username, setUsername }) => {
       p={4}
       maxW="100vw"
       overflowX="hidden"
-      bg="#5C3168" color="white" minH="100vh"
+      bg="#E6DEE8"
+      color="white"
+      minH="100vh"
     >
       <VStack spacing={4} align="stretch">
         <HStack justifyContent="space-between" flexWrap="wrap" w="100%">
@@ -292,32 +248,19 @@ const MainPage = ({ username, setUsername }) => {
         <GameList
           games={games}
           addToWishlist={addToWishlist}
-          addToPlayingNow={addToPlayingNow}
-          addToPlayedGames={addToPlayedGames}
         />
-        {/* Top Ten Section */}
         <TopTen
           addToWishlist={addToWishlist}
-          addToPlayingNow={addToPlayingNow}
-          addToPlayedGames={addToPlayedGames}
         />
-        {/* Playing Now List */}
-        <PlayingNow
-          playingNow={playingNow}
-          removeFromPlayingNow={removeFromPlayingNow}
-          addToPlayedGames={addToPlayedGames}
-        />
-        {/* Wishlist */}
         <Wishlist wishlist={wishlist} removeFromWishlist={removeFromWishlist} />
-        {/* Played Games List */}
-        <PlayedGames
-          playedGames={playedGames}
-          removeFromPlayedGames={removeFromPlayedGames}
-          updateGameRating={updateGameRating}
-        />
       </VStack>
     </Box>
   );
+};
+
+MainPage.propTypes = {
+  username: PropTypes.string.isRequired,
+  setUsername: PropTypes.func.isRequired,
 };
 
 export default MainPage;

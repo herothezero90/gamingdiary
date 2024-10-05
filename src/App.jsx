@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { ChakraProvider } from '@chakra-ui/react';
 import Login from './components/Login';
 import MainPage from './components/MainPage';

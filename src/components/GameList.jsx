@@ -1,12 +1,10 @@
-import React from 'react';
 import { VStack } from '@chakra-ui/react';
 import GameCard from './GameCard';
+import PropTypes from 'prop-types';
 
 const GameList = ({
   games,
-  addToWishlist,
-  addToPlayingNow,
-  addToPlayedGames,
+  addToWishlist
 }) => {
   return (
     <VStack
@@ -22,13 +20,24 @@ const GameList = ({
             key={game.id}
             game={game}
             addToWishlist={addToWishlist}
-            addToPlayingNow={addToPlayingNow}
-            addToPlayedGames={addToPlayedGames}
             hideButtons={false}
           />
         ))}
     </VStack>
   );
 };
+
+GameList.propTypes = {
+  games: PropTypes.arrayOf(
+    PropTypes.shape({
+      id: PropTypes.number.isRequired,
+      name: PropTypes.string.isRequired,
+      background_image: PropTypes.string,
+      metacritic: PropTypes.number,
+    })
+  ).isRequired,
+  addToWishlist: PropTypes.func.isRequired,
+};
+
 
 export default GameList;

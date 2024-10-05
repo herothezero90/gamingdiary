@@ -1,108 +1,114 @@
-import React, { useState } from 'react';
-import { Box, Image, Text, Button, VStack, HStack } from '@chakra-ui/react';
-import Rating from './Rating';
+import {
+  Box,
+  Center,
+  useColorModeValue,
+  Heading,
+  Text,
+  Stack,
+  Image,
+  Button,
+} from '@chakra-ui/react';
+import PropTypes from 'prop-types';
 
-const GameCard = ({
-  game,
-  addToWishlist,
-  addToPlayingNow,
-  addToPlayedGames,
-  removeFromPlayingNow,
-  removeFromWishlist,
-  removeFromPlayedGames,
-  hideButtons = false,
-  isInWishlist,
-  isInPlayingNow,
-  isInPlayedGames,
-  showRemoveButton = false,
-  actionType,
-  updateGameRating,
-}) => {
-  const handleAddToList = (listType) => {
-    if (listType === 'To Buy' && addToWishlist) {
-      addToWishlist(game);
-    } else if (listType === 'Playing' && addToPlayingNow) {
-      addToPlayingNow(game);
-    } else if (listType === 'Played' && addToPlayedGames) {
-      addToPlayedGames(game);
-    }
-  };
+const GameCard = ({ game, addToWishlist }) => {
+  const platformsList = game.platforms
+    ? game.platforms.map((platform) => platform.platform.name).join(', ')
+    : 'Unknown platforms';
 
-  const handleRemove = () => {
-    if (removeFromWishlist) {
-      removeFromWishlist(game.id);
-    }
-    if (removeFromPlayingNow) {
-      removeFromPlayingNow(game.id);
-    }
-    if (removeFromPlayedGames) {
-      removeFromPlayedGames(game.id);
-    }
-  };
+  const genresList = game.genres
+    ? game.genres.map((genre) => genre.name).join(', ')
+    : 'Unknown genres';
 
   return (
-    <Box
-      bg="gray.800"
-      color="white"
-      borderRadius="lg"
-      overflow="hidden"
-      p={4}
-      w="100%"
-      maxW="lg"
-      boxShadow="lg"
-    >
-      <VStack spacing={4} align="center">
-        <Image
-          src={game.background_image}
-          alt={game.name}
-          boxSize="200px"
-          objectFit="cover"
-          borderRadius="md"
-        />
-        <Text fontSize="xl" fontWeight="bold" textAlign="center">
-          {game.name}
-        </Text>
-        <Text textAlign="center">Metascore: {game.metacritic || 'N/A'}</Text>
-
-        {/* Action Buttons */}
-        {!hideButtons && (
-          <HStack spacing={4}>
-            <Button colorScheme="teal" onClick={() => handleAddToList('To Buy')}>
-              To Buy
-            </Button>
-            <Button colorScheme="green" onClick={() => handleAddToList('Played')}>
-              Played
-            </Button>
-            <Button colorScheme="orange" onClick={() => handleAddToList('Playing')}>
-              Playing
-            </Button>
-          </HStack>
-        )}
-
-        {/* Remove Button */}
-        {showRemoveButton && (
-          <Button colorScheme="red" onClick={handleRemove}>
-            Remove
-          </Button>
-        )}
-
-        {/* Rating Component for Played Games */}
-        {isInPlayedGames && updateGameRating && (
-          <Rating
-            gameId={game.id}
-            rating={game.rating}
-            updateGameRating={updateGameRating}
+    <Center py={12}>
+      <Box
+        role={'group'}
+        p={6}
+        maxW={'330px'}
+        w={'full'}
+        bg={useColorModeValue('white', 'gray.800')}
+        boxShadow={'2xl'}
+        rounded={'lg'}
+        pos={'relative'}
+        zIndex={1}>
+        <Box
+          rounded={'lg'}
+          mt={0}
+          pos={'relative'}
+          height={'230px'}
+          _after={{
+            transition: 'all .3s ease',
+            content: '""',
+            w: 'full',
+            h: 'full',
+            pos: 'absolute',
+            top: 5,
+            left: 0,
+            backgroundImage: `url(${game.background_image || 'https://via.placeholder.com/230'})`,
+            filter: 'blur(15px)',
+            zIndex: -1,
+          }}
+          _groupHover={{
+            _after: {
+              filter: 'blur(20px)',
+            },
+          }}>
+          <Image
+            rounded={'lg'}
+            height={230}
+            width={282}
+            objectFit={'cover'}
+            src={game.background_image || 'https://via.placeholder.com/230'}
+            alt={game.name}
           />
-        )}
-        {/* Remove Button */}
-        {showRemoveButton && (
-          <Button colorScheme="red" onClick={handleRemove}>
-            Remove
+        </Box>
+
+        <Stack pt={6} align={'center'}>
+          <Heading fontSize={'xl'} fontFamily={'body'} fontWeight={500} noOfLines={1}>
+            {game.name}
+          </Heading>
+        </Stack>
+
+        <Stack align={'center'} mt={4}>
+          <Text color={'gray.500'} fontSize={'sm'} textTransform={'uppercase'}>
+            Genres: {genresList}
+          </Text>
+          <Text color={'gray.500'} fontSize={'sm'}>
+            Platforms: {platformsList}
+          </Text>
+          <Text color={'gray.500'} fontSize={'sm'}>
+            Metascore: {game.metacritic !== null ? game.metacritic : 'N/A'}
+          </Text>
+        </Stack>
+
+        <Stack direction={'row'} align={'center'} mt={6}>
+          <Button
+            bg="black"
+            color="white"
+            _hover={{ bg: 'gray.700' }}
+            onClick={() => addToWishlist(game)}
+            width="full"
+            rounded="md"
+          >
+            Add to Wishlist
           </Button>
-        )}
-      </VStack>
-    </Box>
+        </Stack>
+      </Box>
+    </Center>
   );
+};
+
+// PropTypes validation
+GameCard.propTypes = {
+  game: PropTypes.shape({
+    id: PropTypes.number.isRequired,
+    name: PropTypes.string.isRequired,
+    background_image: PropTypes.string,
+    genres: PropTypes.arrayOf(PropTypes.shape({ name: PropTypes.string })),
+    platforms: PropTypes.arrayOf(PropTypes.shape({ platform: PropTypes.shape({ name: PropTypes.string }) })),
+    metacritic: PropTypes.number,
+  }).isRequired,
+  addToWishlist: PropTypes.func.isRequired,
 };
 
 export default GameCard;

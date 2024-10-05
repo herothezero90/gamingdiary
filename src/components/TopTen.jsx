@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState } from 'react';
 import {
   Box,
   SimpleGrid,
@@ -10,14 +10,15 @@ import {
   Center,
   Spinner
 } from '@chakra-ui/react';
+import PropTypes from 'prop-types';
 
-const TopTen = ({ addToWishlist, addToPlayingNow, addToPlayedGames }) => {
+const TopTen = ({ addToWishlist }) => {
   const [games, setGames] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  const [showTopRated, setShowTopRated] = useState(false); // Controls visibility of the section
-  const [page, setPage] = useState(1); // For pagination
+  const [showTopRated, setShowTopRated] = useState(false);
+  const [page, setPage] = useState(1);
 
   const fetchTopGames = async (pageNumber) => {
     setLoading(true);
@@ -34,7 +35,6 @@ const TopTen = ({ addToWishlist, addToPlayingNow, addToPlayedGames }) => {
 
       const data = await response.json();
 
-      // Filter games with cover images
       const gamesWithImages = data.results.filter((game) => game.background_image);
 
       setGames(gamesWithImages);
@@ -48,7 +48,7 @@ const TopTen = ({ addToWishlist, addToPlayingNow, addToPlayedGames }) => {
 
   const handleShowTopRated = () => {
     setShowTopRated(true);
-    setPage(1); // Reset to first page
+    setPage(1);
     fetchTopGames(1);
   };
 
@@ -74,7 +74,6 @@ const TopTen = ({ addToWishlist, addToPlayingNow, addToPlayedGames }) => {
 
   return (
     <Box p={4}>
-      {/* Centering Show/Hide Button */}
       <Center>
         {!showTopRated && (
           <Button onClick={handleShowTopRated} colorScheme="blue">
@@ -89,7 +88,6 @@ const TopTen = ({ addToWishlist, addToPlayingNow, addToPlayedGames }) => {
         )}
       </Center>
 
-      {/* Games Grid */}
       {showTopRated && (
         <Box mt={4}>
           {loading && (
@@ -120,28 +118,13 @@ const TopTen = ({ addToWishlist, addToPlayingNow, addToPlayedGames }) => {
                   <Text fontWeight="bold">{game.name}</Text>
                   <Text>Metascore: {game.metacritic}</Text>
 
-                  {/* Action Buttons */}
                   <HStack spacing={2} mt={2} justifyContent="center">
                     <Button
                       size="sm"
                       colorScheme="teal"
                       onClick={() => addToWishlist(game)}
                     >
-                      To Buy
-                    </Button>
-                    <Button
-                      size="sm"
-                      colorScheme="green"
-                      onClick={() => addToPlayedGames(game)}
-                    >
-                      Played
-                    </Button>
-                    <Button
-                      size="sm"
-                      colorScheme="orange"
-                      onClick={() => addToPlayingNow(game)}
-                    >
-                      Playing
+                      Add to Wishlist
                     </Button>
                   </HStack>
                 </Box>
@@ -149,7 +132,6 @@ const TopTen = ({ addToWishlist, addToPlayingNow, addToPlayedGames }) => {
             </SimpleGrid>
           )}
 
-          {/* Centering Next/Previous Buttons */}
           <Center mt={4}>
             <HStack>
               <Button onClick={handlePreviousPage} isDisabled={page === 1} colorScheme="blue">
@@ -164,6 +146,10 @@ const TopTen = ({ addToWishlist, addToPlayingNow, addToPlayedGames }) => {
       )}
     </Box>
   );
+};
+
+TopTen.propTypes = {
+  addToWishlist: PropTypes.func.isRequired,
 };
 
 export default TopTen;

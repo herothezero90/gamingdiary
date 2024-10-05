@@ -1,4 +1,3 @@
-import React from 'react';
 import {
   Modal,
   ModalOverlay,
@@ -10,6 +9,7 @@ import {
   Button,
   Text,
 } from '@chakra-ui/react';
+import PropTypes from 'prop-types';
 
 const InfoModal = ({ isOpen, onClose }) => {
   return (
@@ -31,6 +31,11 @@ const InfoModal = ({ isOpen, onClose }) => {
       </ModalContent>
     </Modal>
   );
+};
+
+InfoModal.propTypes = {
+  isOpen: PropTypes.bool.isRequired,
+  onClose: PropTypes.func.isRequired,
 };
 
 export default InfoModal;
