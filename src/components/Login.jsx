@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Box, Input, Button, Heading, VStack, useDisclosure } from '@chakra-ui/react';
 import bgImg from '/public/Designer2.png'
 import InfoModal from './InfoModal';
+import PropTypes from 'prop-types';
 
 const Login = ({ setUsername }) => {
   const [user, setUser] = useState('');
@@ -49,6 +50,10 @@ const Login = ({ setUsername }) => {
       </VStack>
     </Box>
   );
+};
+
+Login.propTypes = {
+  setUsername: PropTypes.func.isRequired,  // setUsername should be a function and is required
 };
 
 export default Login;

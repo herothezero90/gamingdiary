@@ -18,6 +18,7 @@ const Wishlist = ({ wishlist, removeFromWishlist }) => {
               isInWishlist={true}
               removeFromWishlist={removeFromWishlist}
               showRemoveButton={true}
+              size="large"
             />
           ))}
         </VStack>

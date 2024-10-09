@@ -1,7 +1,7 @@
+/* eslint-disable no-undef */
 const fetch = require("node-fetch");
-require("dotenv").config();
 
-exports.handler = async (event, context) => {
+exports.handler = async (event) => {
   try {
     const apiKey = process.env.RAWG_API_KEY;
 

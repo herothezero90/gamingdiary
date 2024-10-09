@@ -2,15 +2,15 @@ import { useState } from 'react';
 import {
   Box,
   SimpleGrid,
-  Image,
-  Text,
-  Button,
   VStack,
   HStack,
   Center,
-  Spinner
+  Spinner,
+  Button,
+  Text
 } from '@chakra-ui/react';
 import PropTypes from 'prop-types';
+import GameCard from './GameCard'; // Import the GameCard component
 
 const TopTen = ({ addToWishlist }) => {
   const [games, setGames] = useState([]);
@@ -105,29 +105,7 @@ const TopTen = ({ addToWishlist }) => {
           {!loading && !error && (
             <SimpleGrid columns={{ base: 2, md: 3, lg: 5 }} spacing={4}>
               {games.map((game) => (
-                <Box key={game.id} textAlign="center">
-                  <Image
-                    src={game.background_image}
-                    alt={game.name}
-                    objectFit="cover"
-                    w="100%"
-                    h="200px"
-                    mb={2}
-                    borderRadius="md"
-                  />
-                  <Text fontWeight="bold">{game.name}</Text>
-                  <Text>Metascore: {game.metacritic}</Text>
-
-                  <HStack spacing={2} mt={2} justifyContent="center">
-                    <Button
-                      size="sm"
-                      colorScheme="teal"
-                      onClick={() => addToWishlist(game)}
-                    >
-                      Add to Wishlist
-                    </Button>
-                  </HStack>
-                </Box>
+                <GameCard key={game.id} game={game} addToWishlist={addToWishlist} size="small" />
               ))}
             </SimpleGrid>
           )}
