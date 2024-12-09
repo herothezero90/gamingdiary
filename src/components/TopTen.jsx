@@ -1,4 +1,6 @@
-import { useState } from 'react';
+'use client'
+
+import { useState, useEffect } from 'react';
 import {
   Box,
   SimpleGrid,
@@ -13,6 +15,7 @@ import {
 } from '@chakra-ui/react';
 import PropTypes from 'prop-types';
 import GameCard from './GameCard';
+import InfiniteScroll from 'react-infinite-scroll-component'; // Import the InfiniteScroll component
 
 const TopTen = ({ addToWishlist, removeFromWishlist, wishlist }) => {
   const [games, setGames] = useState([]);
@@ -20,6 +23,7 @@ const TopTen = ({ addToWishlist, removeFromWishlist, wishlist }) => {
   const [error, setError] = useState(null);
   const [showTopRated, setShowTopRated] = useState(false);
   const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true); // Track if more games are available
 
   const fetchTopGames = async (pageNumber) => {
     setLoading(true);
@@ -36,13 +40,20 @@ const TopTen = ({ addToWishlist, removeFromWishlist, wishlist }) => {
 
       const data = await response.json();
 
+      // Assuming the API returns a 'results' array and a 'next' URL for pagination
       const gamesWithImages = data.results.filter((game) => game.background_image);
-      const top4Games = gamesWithImages.slice(0, 4);
+      const newGames = gamesWithImages.slice(0, 4); // Adjust as needed
 
-      setGames(top4Games);
+      setGames((prevGames) => [...prevGames, ...newGames]);
+
+      // Determine if more games are available
+      if (!data.next || newGames.length === 0) {
+        setHasMore(false);
+      }
     } catch (error) {
       console.error('Fetch error:', error);
       setError('An error occurred while fetching the top games.');
+      setHasMore(false); // Stop further fetch attempts on error
     } finally {
       setLoading(false);
     }
@@ -51,6 +62,8 @@ const TopTen = ({ addToWishlist, removeFromWishlist, wishlist }) => {
   const handleShowTopRated = () => {
     setShowTopRated(true);
     setPage(1);
+    setGames([]); // Clear existing games if any
+    setHasMore(true); // Reset hasMore flag
     fetchTopGames(1);
   };
 
@@ -58,26 +71,19 @@ const TopTen = ({ addToWishlist, removeFromWishlist, wishlist }) => {
     setShowTopRated(false);
     setGames([]);
     setPage(1);
+    setHasMore(true); // Reset for future showTopRated actions
   };
 
-  const handleNextPage = () => {
+  const fetchMoreGames = () => {
     const nextPage = page + 1;
     setPage(nextPage);
     fetchTopGames(nextPage);
   };
 
-  const handlePreviousPage = () => {
-    if (page > 1) {
-      const prevPage = page - 1;
-      setPage(prevPage);
-      fetchTopGames(prevPage);
-    }
-  };
-
   const isMobile = useBreakpointValue({ base: true, md: false });
 
   return (
-    <Box p={{ base: 1, md: 4 }} >
+    <Box p={{ base: 1, md: 4 }}>
       <Center p='2'>
         {!showTopRated && (
           <Button onClick={handleShowTopRated} colorScheme="blue">
@@ -93,41 +99,36 @@ const TopTen = ({ addToWishlist, removeFromWishlist, wishlist }) => {
 
       {showTopRated && (
         <Box mt={4}>
-          {loading && (
-            <VStack mt={4}>
-              <Spinner />
-            </VStack>
-          )}
-
           {error && (
             <Text color="red.500" mt={4}>
               {error}
             </Text>
           )}
 
-          {!loading && !error && (
-            <>
-              {isMobile ? (
-                <Flex overflowX="auto" pb={4}>
-                  <HStack spacing={4}>
-                    {games.map((game) => (
-                      <GameCard
-                        key={game.id}
-                        game={game}
-                        addToWishlist={addToWishlist}
-                        removeFromWishlist={removeFromWishlist}
-                        isInWishlist={wishlist.some((g) => g.id === game.id)}
-                        size="small" // Smaller size on mobile
-                      />
-                    ))}
-                  </HStack>
-                </Flex>
-              ) : (
-                <SimpleGrid
-                  columns={{ base: 1, md: 2, xl: 4 }}
-                  spacing={4}
-                  px={{ base: 2, md: 20 }}
-                >
+          {/* InfiniteScroll Component */}
+          <InfiniteScroll
+            dataLength={games.length} // This is important field to render the next data
+            next={fetchMoreGames} // Function to fetch more data
+            hasMore={hasMore} // Boolean indicating if there's more data to load
+            loader={
+              loading && (
+                <VStack mt={4}>
+                  <Spinner />
+                </VStack>
+              )
+            }
+            endMessage={
+              !loading && !error && (
+                <Text textAlign="center" mt={4}>
+                  You have seen all top-rated games!
+                </Text>
+              )
+            }
+            style={{ overflow: 'visible' }} // To allow Chakra UI components to render properly
+          >
+            {isMobile ? (
+              <Flex overflowX="auto" pb={4}>
+                <HStack spacing={4}>
                   {games.map((game) => (
                     <GameCard
                       key={game.id}
@@ -135,30 +136,30 @@ const TopTen = ({ addToWishlist, removeFromWishlist, wishlist }) => {
                       addToWishlist={addToWishlist}
                       removeFromWishlist={removeFromWishlist}
                       isInWishlist={wishlist.some((g) => g.id === game.id)}
-                      size="medium" // Default size on larger screens
+                      size="small" // Smaller size on mobile
                     />
                   ))}
-                </SimpleGrid>
-              )}
-            </>
-          )}
-
-          {showTopRated && !loading && !error && (
-            <Center mt={4}>
-              <HStack>
-                <Button
-                  onClick={handlePreviousPage}
-                  isDisabled={page === 1}
-                  colorScheme="blue"
-                >
-                  Previous
-                </Button>
-                <Button onClick={handleNextPage} colorScheme="blue">
-                  Next
-                </Button>
-              </HStack>
-            </Center>
-          )}
+                </HStack>
+              </Flex>
+            ) : (
+              <SimpleGrid
+                columns={{ base: 1, md: 2, xl: 4 }}
+                spacing={4}
+                px={{ base: 2, md: 20 }}
+              >
+                {games.map((game) => (
+                  <GameCard
+                    key={game.id}
+                    game={game}
+                    addToWishlist={addToWishlist}
+                    removeFromWishlist={removeFromWishlist}
+                    isInWishlist={wishlist.some((g) => g.id === game.id)}
+                    size="medium" // Default size on larger screens
+                  />
+                ))}
+              </SimpleGrid>
+            )}
+          </InfiniteScroll>
         </Box>
       )}
     </Box>
