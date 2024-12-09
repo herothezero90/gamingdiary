@@ -1,4 +1,4 @@
-import { Box, VStack, Heading } from '@chakra-ui/react';
+import { Box, SimpleGrid, Heading } from '@chakra-ui/react';
 import GameCard from './GameCard';
 import PropTypes from 'prop-types';
 
@@ -9,7 +9,7 @@ const Wishlist = ({ wishlist, removeFromWishlist }) => {
         Wishlist
       </Heading>
       {wishlist.length > 0 ? (
-        <VStack spacing={4}>
+        <SimpleGrid columns={{ base: 1, lg: 3, xl: 4 }} spacing={4} >
           {wishlist.map((game) => (
             <GameCard
               key={game.id}
@@ -21,7 +21,7 @@ const Wishlist = ({ wishlist, removeFromWishlist }) => {
               size="large"
             />
           ))}
-        </VStack>
+        </SimpleGrid>
       ) : (
         <Box textAlign="center">Your wishlist is empty.</Box>
       )}
@@ -30,14 +30,7 @@ const Wishlist = ({ wishlist, removeFromWishlist }) => {
 };
 
 Wishlist.propTypes = {
-  wishlist: PropTypes.arrayOf(
-    PropTypes.shape({
-      id: PropTypes.number.isRequired,
-      name: PropTypes.string.isRequired,
-      background_image: PropTypes.string,
-      metacritic: PropTypes.number,
-    })
-  ).isRequired,
+  wishlist: PropTypes.array.isRequired,
   removeFromWishlist: PropTypes.func.isRequired,
 };
 

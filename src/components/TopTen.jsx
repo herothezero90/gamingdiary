@@ -7,16 +7,17 @@ import {
   Center,
   Spinner,
   Button,
-  Text
+  Text,
+  Flex,
+  useBreakpointValue,
 } from '@chakra-ui/react';
 import PropTypes from 'prop-types';
-import GameCard from './GameCard'; // Import the GameCard component
+import GameCard from './GameCard';
 
-const TopTen = ({ addToWishlist }) => {
+const TopTen = ({ addToWishlist, removeFromWishlist, wishlist }) => {
   const [games, setGames] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-
   const [showTopRated, setShowTopRated] = useState(false);
   const [page, setPage] = useState(1);
 
@@ -36,8 +37,9 @@ const TopTen = ({ addToWishlist }) => {
       const data = await response.json();
 
       const gamesWithImages = data.results.filter((game) => game.background_image);
+      const top4Games = gamesWithImages.slice(0, 4);
 
-      setGames(gamesWithImages);
+      setGames(top4Games);
     } catch (error) {
       console.error('Fetch error:', error);
       setError('An error occurred while fetching the top games.');
@@ -72,15 +74,16 @@ const TopTen = ({ addToWishlist }) => {
     }
   };
 
+  const isMobile = useBreakpointValue({ base: true, md: false });
+
   return (
-    <Box p={4}>
-      <Center>
+    <Box p={{ base: 1, md: 4 }} >
+      <Center p='2'>
         {!showTopRated && (
           <Button onClick={handleShowTopRated} colorScheme="blue">
             Show Top Rated Games
           </Button>
         )}
-
         {showTopRated && (
           <Button onClick={handleHideTopRated} colorScheme="blue">
             Hide Top Rated Games
@@ -103,23 +106,59 @@ const TopTen = ({ addToWishlist }) => {
           )}
 
           {!loading && !error && (
-            <SimpleGrid columns={{ base: 2, md: 3, lg: 5 }} spacing={4}>
-              {games.map((game) => (
-                <GameCard key={game.id} game={game} addToWishlist={addToWishlist} size="small" />
-              ))}
-            </SimpleGrid>
+            <>
+              {isMobile ? (
+                <Flex overflowX="auto" pb={4}>
+                  <HStack spacing={4}>
+                    {games.map((game) => (
+                      <GameCard
+                        key={game.id}
+                        game={game}
+                        addToWishlist={addToWishlist}
+                        removeFromWishlist={removeFromWishlist}
+                        isInWishlist={wishlist.some((g) => g.id === game.id)}
+                        size="small" // Smaller size on mobile
+                      />
+                    ))}
+                  </HStack>
+                </Flex>
+              ) : (
+                <SimpleGrid
+                  columns={{ base: 1, md: 2, xl: 4 }}
+                  spacing={4}
+                  px={{ base: 2, md: 20 }}
+                >
+                  {games.map((game) => (
+                    <GameCard
+                      key={game.id}
+                      game={game}
+                      addToWishlist={addToWishlist}
+                      removeFromWishlist={removeFromWishlist}
+                      isInWishlist={wishlist.some((g) => g.id === game.id)}
+                      size="medium" // Default size on larger screens
+                    />
+                  ))}
+                </SimpleGrid>
+              )}
+            </>
           )}
 
-          <Center mt={4}>
-            <HStack>
-              <Button onClick={handlePreviousPage} isDisabled={page === 1} colorScheme="blue">
-                Previous
-              </Button>
-              <Button onClick={handleNextPage} colorScheme="blue">
-                Next
-              </Button>
-            </HStack>
-          </Center>
+          {showTopRated && !loading && !error && (
+            <Center mt={4}>
+              <HStack>
+                <Button
+                  onClick={handlePreviousPage}
+                  isDisabled={page === 1}
+                  colorScheme="blue"
+                >
+                  Previous
+                </Button>
+                <Button onClick={handleNextPage} colorScheme="blue">
+                  Next
+                </Button>
+              </HStack>
+            </Center>
+          )}
         </Box>
       )}
     </Box>
@@ -128,6 +167,8 @@ const TopTen = ({ addToWishlist }) => {
 
 TopTen.propTypes = {
   addToWishlist: PropTypes.func.isRequired,
+  removeFromWishlist: PropTypes.func.isRequired,
+  wishlist: PropTypes.array.isRequired,
 };
 
 export default TopTen;
