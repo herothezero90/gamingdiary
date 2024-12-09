@@ -53,7 +53,7 @@ const Login = ({ setUsername }) => {
 };
 
 Login.propTypes = {
-  setUsername: PropTypes.func.isRequired,  // setUsername should be a function and is required
+  setUsername: PropTypes.func.isRequired,
 };
 
 export default Login;

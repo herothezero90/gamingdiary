@@ -43,7 +43,7 @@ const GameCard = ({ game, addToWishlist, removeFromWishlist, isInWishlist = fals
     <Center py={{ base: 2, md: 4 }}>
       <Box
         w={['200px', 'xs']}
-        h={['320px', '400px']}
+        h={['50vh', '400px']}
         rounded="xl"
         my={5}
         mx={[0, 5]}
